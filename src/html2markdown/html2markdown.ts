@@ -5,6 +5,8 @@ import Turndown from 'turndown';
 // @ts-ignore
 import { gfm } from 'turndown-plugin-gfm';
 
+export type HtmlElementName = keyof HTMLElementTagNameMap;
+
 const autolinkRegex = /* #__PURE__ */ new RegExp(
 	// Prefix.
 	/\b(?:(?:https?|ftp):\/\/|www\.)/.source +
@@ -112,29 +114,25 @@ class UpdatedTurndown extends Turndown {
 
 		return length;
 	}
-
-	/**
-     * Add custom rules
-     */
-	private _addRules() {
-		// use underscore for underline
-		super.addRule( 'underline', {
-			filter: [ 'u' ],
-			replacement: ( content: any ) => {
-				return `_${ content }_`;
-			}
-		} );
-	}
 }
 
 /**
- * This is a helper class used by the {@link module:markdown-gfm/markdown Markdown feature} to convert HTML to Markdown.
+ * This is a helper class used to convert HTML to Markdown.
  */
 export class HtmlToMarkdown {
 	private _parser: UpdatedTurndown;
 
-	constructor() {
+	constructor( config: Record<HtmlElementName, string> ) {
 		this._parser = this._createParser();
+		for ( const key in config ) {
+			this._parser.addRule( key, {
+				filter: [ key as HtmlElementName ],
+				replacement: ( content: string ) => {
+					const htmlKey = key as HtmlElementName;
+					return `${ config[ htmlKey ] }${ content }${ config[ htmlKey ] }`;
+				}
+			} );
+		}
 	}
 
 	public parse( html: string ): string {
@@ -150,6 +148,13 @@ export class HtmlToMarkdown {
 			codeBlockStyle: 'fenced',
 			hr: '---',
 			headingStyle: 'atx'
+		} );
+
+		parser.addRule( 'underline', {
+			filter: [ 'u' ],
+			replacement: ( content: any ) => {
+				return `_${ content }_`;
+			}
 		} );
 
 		parser.use( [

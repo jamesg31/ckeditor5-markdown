@@ -1,4 +1,8 @@
-import { marked } from 'marked';
+import { marked, type Tokens } from 'marked';
+
+export interface MarkdownToHtmlConfig {
+	[key: string]: string | undefined;
+}
 
 /**
  * This is a helper class used to convert Markdown to HTML.
@@ -15,8 +19,17 @@ export class MarkdownToHtml {
 		async: false
 	};
 
-	constructor() {
-		// Overrides.
+	constructor( config: MarkdownToHtmlConfig | undefined ) {
+		// Create dynamic renderer configuration
+		const customRenderers = Object.entries( config || {} ).reduce( ( acc, [ token, tag ] ) => {
+			if ( tag ) {
+				acc[ token ] = function( tokenObj: Tokens.Generic ): string {
+					return `<${ tag }>${ tokenObj.text }</${ tag }>`;
+				};
+			}
+			return acc;
+		}, {} as Record<string, Function> );
+
 		marked.use( {
 			tokenizer: {
 				// Disable the autolink rule in the lexer.
@@ -24,12 +37,7 @@ export class MarkdownToHtml {
 				url: () => null as any
 			},
 			renderer: {
-				em( token: { text: string; char?: string } ): string {
-					if ( token.char === '_' ) {
-						return `<u>${ token.text }</u>`;
-					}
-					return `<em>${ token.text }</em>`;
-				},
+				...customRenderers,
 
 				checkbox( ...args: Array<any> ) {
 					// Remove bogus space after <input type="checkbox"> because it would be preserved

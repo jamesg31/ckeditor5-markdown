@@ -20,7 +20,7 @@ export default class PasteFromMarkdownExperimental extends Plugin {
 	constructor( editor: Editor ) {
 		super( editor );
 
-		this._mdDataProcessor = new MDDataProcessor( editor.data.viewDocument );
+		this._mdDataProcessor = new MDDataProcessor( editor );
 	}
 
 	/**
