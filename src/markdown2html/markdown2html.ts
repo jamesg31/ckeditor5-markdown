@@ -24,6 +24,13 @@ export class MarkdownToHtml {
 				url: () => null as any
 			},
 			renderer: {
+				em( token: { text: string; char?: string } ): string {
+					if ( token.char === '_' ) {
+						return `<u>${ token.text }</u>`;
+					}
+					return `<em>${ token.text }</em>`;
+				},
+
 				checkbox( ...args: Array<any> ) {
 					// Remove bogus space after <input type="checkbox"> because it would be preserved
 					// by DomConverter as it's next to an inline object.

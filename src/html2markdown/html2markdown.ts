@@ -112,6 +112,19 @@ class UpdatedTurndown extends Turndown {
 
 		return length;
 	}
+
+	/**
+     * Add custom rules
+     */
+	private _addRules() {
+		// use underscore for underline
+		super.addRule( 'underline', {
+			filter: [ 'u' ],
+			replacement: ( content: any ) => {
+				return `_${ content }_`;
+			}
+		} );
+	}
 }
 
 /**
